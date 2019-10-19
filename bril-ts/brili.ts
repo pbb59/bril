@@ -27,6 +27,11 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   vadd: 2,
   vload: 1,
   vstore: 2,
+  s2v: 2, // write scalar reg to vector reg idx
+  v2s: 2
+  // control flow will make analysis harder according to intel paper?
+  //vbr: 3,
+  //vbr.uni: 3
 };
 
 // this represents an infinite size register file
