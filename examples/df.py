@@ -137,26 +137,41 @@ def cprop_merge(vals_list):
     return out_vals
 
 # a value is divergent in our case if
-# 1) Non const "Function" arg like a 'tid' variable (need a way to tag this either implement func calls or add special intepreter tag instead of const)
+# 0) Non const "Function" arg like a 'tid' variable (not SIMT so don't have this)
+# 1) Different scalar values placed into a vector register
 # 2) A dependency is already divergent
-# 3) If variable is killed, then need to check again if divergent (not important in SSA)
-# 4) Control... need SSA
+# 3) Control... need SSA
+# 4) If variable is killed, then need to check again if divergent (not important in SSA)
+
 # Generally things depenedent on something like 'tid' are divergent while others are not
 # Args current block (? inst) and incoming divergent values
 def div_transfer(block, in_vals):
-    out_vals = in_vals
+    out_vals = in_vals.copy()
     for instr in block:
         # get new divergent variables
-        # Check for condition (3) if not in SSA
+        # Check for condition (4) if not in SSA
         # not implemented
         # Check for condition (1)
-        if instr['op'] == 'varied':
+        if instr['op'] == 's2v':
+            # additionally check if the same reg written to each slot
+            # prob very unlikely to happen but check anyway
+            # might also benefit from redundant code removal before this pass
+            args = var_args(instr)
+            redundant = True
+            for arg in args:
+                if args[0] != arg:
+                    redundant = False
+            if (not redundant):
+                out_vals.add(instr['dest'])
+        elif instr['op'] == 'vload':
             out_vals.add(instr['dest'])
         # Check for condition (2)
-        for arg in var_args(instr):
-            if arg in out_vals:
-                out_vals.add(instr['dest'])
-                break
+        # only check value operations because can't propogate if not
+        if ('dest' in instr):
+            for arg in var_args(instr):
+                if arg in out_vals:
+                    out_vals.add(instr['dest'])
+                    break
     return out_vals
 
 ANALYSES = {

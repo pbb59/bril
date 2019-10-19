@@ -1,0 +1,33 @@
+# ARGS: diverge
+
+main {
+# init const idxs
+init:
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+
+# simplest spatial redundancy elimination
+pack:
+  a0: int = const 1;
+  a1: int = const 2;
+  a2: int = const 3;
+  a3: int = const 4;
+  vec0: vector = s2v a0 a1 a2 a3;
+  vec1: vector = s2v a0 a1 a2 a3;
+add:
+  vec2: vector = vadd vec0 vec1;
+extract:
+  a4: int = v2s vec2 zero;
+  a5: int = v2s vec2 one;
+  a6: int = v2s vec2 two;
+  a7: int = v2s vec2 three;
+
+# print results
+print:
+  print a4;
+  print a5;
+  print a6;
+  print a7;
+}

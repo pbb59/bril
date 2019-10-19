@@ -1,0 +1,19 @@
+init:
+  in:  ∅
+  out: ∅
+pack:
+  in:  ∅
+  out: vec0, vec1
+add:
+  in:  vec0, vec1
+  out: vec0, vec1, vec2
+extract:
+  in:  vec0, vec1, vec2
+  out: a4, a5, a6, a7, vec0, vec1, vec2
+print:
+  in:  a4, a5, a6, a7, vec0, vec1, vec2
+  out: a4, a5, a6, a7, vec0, vec1, vec2
+2
+4
+6
+8
