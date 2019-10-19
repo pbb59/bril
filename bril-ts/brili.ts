@@ -3,6 +3,12 @@ import * as bril from './bril';
 import {readStdin, unreachable} from './util';
 import { isConstructSignatureDeclaration } from 'typescript';
 
+/*
+ * We're doing fixed array size of 4 so set this here
+ * It's all my computer support natively so don't go beyond
+ */
+let fixedVecSize: number = 4;
+
 const argCounts: {[key in bril.OpCode]: number | null} = {
   add: 2,
   mul: 2,
@@ -14,7 +20,7 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   gt: 2,
   ge: 2,
   eq: 2,
-  not: 2,
+  not: 1,
   and: 2,
   or: 2,
   print: null,  // Any number of arguments.
@@ -27,8 +33,9 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   vadd: 2,
   vload: 1,
   vstore: 2,
-  s2v: 2, // write scalar reg to vector reg idx
-  v2s: 2
+  s2v: fixedVecSize, // set scalars to vector produce vector reg
+  s2vb: 1, // broadcast scalar reg to fill each value of scalar reg
+  v2s: 2 // get value from vector reg to scalar reg
   // control flow will make analysis harder according to intel paper?
   //vbr: 3,
   //vbr.uni: 3
@@ -44,12 +51,6 @@ type Env = Map<bril.Ident, bril.Value>;
  */
 let stackSize: number = 24576;
 let stack = new Int32Array(stackSize);
-
-/*
- * We're doing fixed array size of 4 so set this here
- * It's all my computer support natively so don't go beyond
- */
-let fixedVecSize: number = 4;
 
 /*
  * Initialize the binding
@@ -286,7 +287,6 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
     }
     env.set(instr.dest, vecC);    
 
-    //console.log(c);
     return NEXT;
   }
 
@@ -313,7 +313,36 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
 
     return NEXT;
   }
- 
+
+  case "s2v": {
+    let vector = new Int32Array(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      vector[i] = getInt(instr, env, i);
+    }
+    env.set(instr.dest, vector);
+
+    return NEXT;
+  }
+
+  case "s2vb": {
+    let scalar = getInt(instr, env, 0);
+    let vector = new Int32Array(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      vector[i] = scalar;
+    }
+    env.set(instr.dest, vector);    
+
+    return NEXT;
+  }
+
+  case "v2s": {
+    let vector = getVec(instr, env, 0);
+    let idx    = getInt(instr, env, 1);
+    env.set(instr.dest, vector[idx]);
+
+    return NEXT;
+  }
+
   }
   unreachable(instr);
   throw `unhandled opcode ${(instr as any).op}`;

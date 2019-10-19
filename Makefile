@@ -1,4 +1,5 @@
 TESTS := \
+    test/proj2/*.bril \
     test/proj1/*.bril \
     test/parse/*.bril \
 	test/print/*.json \

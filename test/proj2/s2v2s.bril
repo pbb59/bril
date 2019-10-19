@@ -1,0 +1,28 @@
+main {
+# init data
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+  
+  a0: int = const 1;
+  a1: int = const 2;
+  a2: int = const 3;
+  a3: int = const 4;
+  a4: int = const 5;
+# create vectors from scalars
+  vecA: vector = s2vb a0;
+  vecB: vector = s2v a1 a2 a3 a4;
+# do actual computation
+  vecC: vector = vadd vecA vecB;
+# extract data from vector
+  a5: int = v2s vecC zero;
+  a6: int = v2s vecC one;
+  a7: int = v2s vecC two;
+  a8: int = v2s vecC three;
+# print results
+  print a5;
+  print a6;
+  print a7;
+  print a8;
+}
