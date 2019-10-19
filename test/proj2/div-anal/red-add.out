@@ -1,0 +1,15 @@
+init:
+  in:  ∅
+  out: ∅
+pack:
+  in:  ∅
+  out: ∅
+add:
+  in:  ∅
+  out: ∅
+extract:
+  in:  ∅
+  out: ∅
+print:
+  in:  ∅
+  out: ∅

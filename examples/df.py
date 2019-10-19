@@ -136,6 +136,28 @@ def cprop_merge(vals_list):
                     out_vals[name] = val
     return out_vals
 
+# a value is divergent in our case if
+# 1) Non const "Function" arg like a 'tid' variable (need a way to tag this either implement func calls or add special intepreter tag instead of const)
+# 2) A dependency is already divergent
+# 3) If variable is killed, then need to check again if divergent (not important in SSA)
+# 4) Control... need SSA
+# Generally things depenedent on something like 'tid' are divergent while others are not
+# Args current block (? inst) and incoming divergent values
+def div_transfer(block, in_vals):
+    out_vals = in_vals
+    for instr in block:
+        # get new divergent variables
+        # Check for condition (3) if not in SSA
+        # not implemented
+        # Check for condition (1)
+        if instr['op'] == 'varied':
+            out_vals.add(instr['dest'])
+        # Check for condition (2)
+        for arg in var_args(instr):
+            if arg in out_vals:
+                out_vals.add(instr['dest'])
+                break
+    return out_vals
 
 ANALYSES = {
     # A really really basic analysis that just accumulates all the
@@ -162,6 +184,14 @@ ANALYSES = {
         init={},
         merge=cprop_merge,
         transfer=cprop_transfer,
+    ),
+
+    # divergence analysis to tag blocks (? don't we want instruction level)
+    'diverge': Analysis(
+        True,
+        init=set(),
+        merge=union,
+        transfer=div_transfer,
     ),
 }
 
