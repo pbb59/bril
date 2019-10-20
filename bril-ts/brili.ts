@@ -35,7 +35,10 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   vstore: 2,
   s2v: fixedVecSize, // set scalars to vector produce vector reg
   s2vb: 1, // broadcast scalar reg to fill each value of scalar reg
-  v2s: 2 // get value from vector reg to scalar reg
+  v2s: 2, // get value from vector reg to scalar reg
+  vcmp: 2 // compare two vector registers and write to results to pred register
+
+
   // control flow will make analysis harder according to intel paper?
   //vbr: 3,
   //vbr.uni: 3
@@ -116,6 +119,16 @@ function getVec(instr: bril.Operation, env: Env, index: number) {
   let val = get(env, instr.args[index]);
   if (!(val instanceof Int32Array)) {
     throw `${instr.op} argument ${index} must be a Int32Array`;
+  }
+
+  return val;
+}
+
+// get predicate value from predicate register file
+function getPred(instr: bril.Operation, env: Env, index: number) {
+  let val = get(env, instr.args[index]);
+  if (!Array.isArray(val) || !val.every(item => typeof item === "boolean")) {
+    throw `${instr.op} argument ${index} must be an Boolean Array`;
   }
 
   return val;
@@ -339,6 +352,18 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
     let vector = getVec(instr, env, 0);
     let idx    = getInt(instr, env, 1);
     env.set(instr.dest, vector[idx]);
+
+    return NEXT;
+  }
+
+  case "vcmp": {
+    let vec0 = getVec(instr, env, 0);
+    let vec1 = getVec(instr, env, 1);
+    let pred = new Array<boolean>(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      pred[i] = vec0[i] == vec1[i];
+    }
+    env.set(instr.dest, pred);
 
     return NEXT;
   }

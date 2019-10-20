@@ -1,0 +1,68 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "dest": "v0",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "dest": "v1",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "args": [
+            "v0"
+          ],
+          "dest": "vec0",
+          "op": "s2vb",
+          "type": "vector"
+        },
+        {
+          "args": [
+            "v1"
+          ],
+          "dest": "vec1",
+          "op": "s2vb",
+          "type": "vector"
+        },
+        {
+          "args": [
+            "vec0",
+            "vec1"
+          ],
+          "dest": "p0",
+          "op": "vcmp",
+          "type": "pred"
+        },
+        {
+          "args": [
+            "vec0",
+            "vec1"
+          ],
+          "dest": "vec2",
+          "neg": "0",
+          "op": "vadd",
+          "pred": "p0",
+          "type": "vector"
+        },
+        {
+          "args": [
+            "vec0",
+            "vec1"
+          ],
+          "dest": "vec2",
+          "neg": "1",
+          "op": "vadd",
+          "pred": "p0",
+          "type": "vector"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

@@ -21,9 +21,11 @@ start: func*
 
 func: CNAME "{" instr* "}"
 
-?instr: const | vop | eop | label
+?instr: const | npvop | pvop | vop | eop | label
 
-const.4: IDENT ":" type "=" "const" lit ";"
+const.6: IDENT ":" type "=" "const" lit ";"
+npvop.5: "(" "!" IDENT ")" IDENT ":" type "=" CNAME IDENT* ";"
+pvop.4: "(" IDENT ")" IDENT ":" type "=" CNAME IDENT* ";"
 vop.3: IDENT ":" type "=" CNAME IDENT* ";"
 eop.2: CNAME IDENT* ";"
 label.1: IDENT ":"
@@ -76,6 +78,35 @@ class JSONTransformer(lark.Transformer):
             'args': [str(t) for t in items],
          }
 
+    # add parse option for predicated line
+    def npvop(self, items):
+        pred = items.pop(0)
+        dest = items.pop(0)
+        type = items.pop(0)
+        op = items.pop(0)
+        return {
+            'op': str(op),
+            'dest': str(dest),
+            'type': type,
+            'args': [str(t) for t in items],
+            'pred': pred,
+            'neg' : '1',
+         }
+
+    def pvop(self, items):
+        pred = items.pop(0)
+        dest = items.pop(0)
+        type = items.pop(0)
+        op = items.pop(0)
+        return {
+            'op': str(op),
+            'dest': str(dest),
+            'type': type,
+            'args': [str(t) for t in items],
+            'pred': pred,
+            'neg' : '0',
+         }
+
     def eop(self, items):
         op = items.pop(0)
         return {
@@ -119,12 +150,22 @@ def instr_to_string(instr):
             str(instr['value']).lower(),
         )
     elif 'dest' in instr:
-        return '{}: {} = {} {}'.format(
-            instr['dest'],
-            instr['type'],
-            instr['op'],
-            ' '.join(instr['args']),
-        )
+        if 'pred' in instr:
+            return '({}{}) {}: {} = {} {}'.format(
+                '!' if int(instr['neg']) else '',
+                instr['pred'],
+                instr['dest'],
+                instr['type'],
+                instr['op'],
+                ' '.join(instr['args']),
+            )
+        else: 
+            return '{}: {} = {} {}'.format(
+                instr['dest'],
+                instr['type'],
+                instr['op'],
+                ' '.join(instr['args']),
+            )
     else:
         return '{} {}'.format(
             instr['op'],

@@ -1,0 +1,9 @@
+main {
+  v0: int = const 1;
+  v1: int = const 2;
+  vec0: vector = s2vb v0;
+  vec1: vector = s2vb v1;
+  p0: pred = vcmp vec0 vec1;
+  (p0) vec2: vector = vadd vec0 vec1;
+  (!p0) vec2: vector = vadd vec0 vec1;
+}
