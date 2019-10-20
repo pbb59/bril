@@ -140,7 +140,7 @@ def cprop_merge(vals_list):
 # 0) Non const "Function" arg like a 'tid' variable (not SIMT so don't have this)
 # 1) Different scalar values placed into a vector register
 # 2) A dependency is already divergent
-# 3) Control... need SSA
+# 3) Control...?? prob need SSA to turn control deps into data deps, but how does it help predication?
 # 4) If variable is killed, then need to check again if divergent (not important in SSA)
 
 # Generally things depenedent on something like 'tid' are divergent while others are not
@@ -209,6 +209,17 @@ ANALYSES = {
         transfer=div_transfer,
     ),
 }
+
+# do divergence analysis on a function
+def div_analysis(func):
+    # Form the CFG.
+    blocks = cfg.block_map(form_blocks(func['instrs']))
+    cfg.add_terminators(blocks)
+
+    # do the analysis, annotating each block with divergence in and out
+    in_, out = df_worklist(blocks, ANALYSES['diverge'])
+    return (blocks, in_, out)
+
 
 if __name__ == '__main__':
     bril = json.load(sys.stdin)

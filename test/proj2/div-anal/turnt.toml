@@ -1,1 +1,1 @@
-command = "bril2json < {filename} | python3 ../../../examples/df.py {args} && bril2json < {filename} | brili"
+command = "bril2json < {filename} | python3 ../../../examples/reduce_vec.py | bril2txt && bril2json < {filename} | python3 ../../../examples/df.py {args} && bril2json < {filename} | brili"
