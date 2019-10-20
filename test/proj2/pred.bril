@@ -1,0 +1,24 @@
+main {
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+  a0: int = const 0;
+  a1: int = const 1;
+  a2: int = const 2;
+  a3: int = const 3;
+  vec0: vector = s2v a0 a1 a2 a3;
+  vec1: vector = s2v a0 a1 a3 a3;
+  p0: pred = vcmp vec0 vec1;
+  vec2: vector = vadd vec0 vec1;
+  (!p0) vec3: vector = vadd vec2 vec1;
+  vec4: vector = vphi p0 vec2 vec3;
+  a4: int = v2s vec4 zero;
+  a5: int = v2s vec4 one;
+  a6: int = v2s vec4 two;
+  a7: int = v2s vec4 three;
+  print a4;
+  print a5;
+  print a6;
+  print a7;
+}

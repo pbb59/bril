@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as bril from './bril';
 import {readStdin, unreachable} from './util';
-import { isConstructSignatureDeclaration } from 'typescript';
+import { isConstructSignatureDeclaration, isConstructorDeclaration } from 'typescript';
 
 /*
  * We're doing fixed array size of 4 so set this here
@@ -36,8 +36,9 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   s2v: fixedVecSize, // set scalars to vector produce vector reg
   s2vb: 1, // broadcast scalar reg to fill each value of scalar reg
   v2s: 2, // get value from vector reg to scalar reg
-  vcmp: 2 // compare two vector registers and write to results to pred register
-
+  vcmp: 2, // compare two vector registers and write to results to pred register
+  idv: 1,
+  vphi: 3 // join two predicate paths
 
   // control flow will make analysis harder according to intel paper?
   //vbr: 3,
@@ -125,14 +126,42 @@ function getVec(instr: bril.Operation, env: Env, index: number) {
 }
 
 // get predicate value from predicate register file
-function getPred(instr: bril.Operation, env: Env, index: number) {
-  let val = get(env, instr.args[index]);
-  if (!Array.isArray(val) || !val.every(item => typeof item === "boolean")) {
-    throw `${instr.op} argument ${index} must be an Boolean Array`;
+function getPred(instr: bril.ValueOperation, env: Env, index?: number) {
+  if (index !== undefined) {
+    let val = get(env, instr.args[index]);
+    if (!Array.isArray(val) || !val.every(item => typeof item === "boolean")) {
+      throw `${instr.op} pred argument must be an Boolean Array`;
+    }
+    return val;
   }
 
-  return val;
+  if (instr.pred === undefined || instr.pred === "undefined") {
+    let noMask = new Array<boolean>(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      noMask[i] = true;
+    }
+    return noMask;
+  }
+
+  let val = get(env, instr.pred);
+  if (!Array.isArray(val) || !val.every(item => typeof item === "boolean")) {
+    throw `${instr.op} pred argument must be an Boolean Array`;
+  }
+
+  // if the mask is negative we need to invert each signal
+  if (instr.neg == "1") {
+    // careful about pass by ref, deep copy here
+    let negVal = new Array<boolean>(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      negVal[i] = !val[i];
+    }
+    return negVal
+  }
+  else {
+    return val;
+  }
 }
+
 
 
 /**
@@ -295,8 +324,14 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
     let vecA = getVec(instr, env, 0);
     let vecB = getVec(instr, env, 1);
     let vecC = new Int32Array(fixedVecSize);
+
+    // if there's a predicate need to skip lanes
+    let mask = getPred(instr, env);
+
     for (let i = 0; i < fixedVecSize; i++) {
-      vecC[i] = vecA[i] + vecB[i];
+      if (mask[i]) {
+        vecC[i] = vecA[i] + vecB[i];
+      }
     }
     env.set(instr.dest, vecC);    
 
@@ -364,6 +399,41 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
       pred[i] = vec0[i] == vec1[i];
     }
     env.set(instr.dest, pred);
+
+    return NEXT;
+  }
+
+  case "idv": {
+    let vec0 = getVec(instr, env, 0);
+    let vec1 = new Int32Array(fixedVecSize);
+
+    // if there's a predicate need to skip lanes
+    let mask = getPred(instr, env);
+
+    for (let i = 0; i < fixedVecSize; i++) {
+      if (mask[i]) {
+        vec1[i] = vec0[i];
+      }
+    }
+    env.set(instr.dest, vec1);
+
+    return NEXT;
+  }
+
+  case "vphi": {
+    let mask = getPred(instr, env, 0);
+    let vec0 = getVec(instr, env, 1);
+    let vec1 = getVec(instr, env, 2);
+    let vec2 = new Int32Array(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      if (mask[i]) {
+        vec2[i] = vec0[i];
+      }
+      else {
+        vec2[i] = vec1[i];
+      }
+    }
+    env.set(instr.dest, vec2);
 
     return NEXT;
   }

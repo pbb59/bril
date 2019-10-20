@@ -29,10 +29,12 @@ export interface ValueOperation {
       "id" | "nop" |
       "eq" | "lt" | "gt" | "ge" | "le" | "not" | "and" | "or" |
       "lw" | "vload" | "vadd" |
-      "s2vb" | "v2s" | "s2v" | "vcmp";
+      "s2vb" | "v2s" | "s2v" | "vcmp" | "idv" | "vphi";
   args: Ident[];
   dest: Ident;
   type: Type;
+  pred: Ident;
+  neg: string;
 }
 
 /**

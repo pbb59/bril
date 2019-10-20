@@ -150,7 +150,7 @@ def instr_to_string(instr):
             str(instr['value']).lower(),
         )
     elif 'dest' in instr:
-        if 'pred' in instr:
+        if 'pred' in instr and instr['pred'] != 'undefined':
             return '({}{}) {}: {} = {} {}'.format(
                 '!' if int(instr['neg']) else '',
                 instr['pred'],

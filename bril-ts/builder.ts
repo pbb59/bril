@@ -28,9 +28,11 @@ export class Builder {
    * omitted, a fresh variable is chosen automatically.
    */
   buildValue(op: bril.ValueOpCode, args: string[],
-             type: bril.Type, dest?: string) {
+             type: bril.Type, dest?: string, pred?: string, neg?: string) {
     dest = dest || this.freshVar();
-    let instr: bril.ValueOperation = { op, args, dest, type };
+    pred = pred || "undefined";
+    neg  = neg  || "undefined";
+    let instr: bril.ValueOperation = { op, args, dest, type, pred, neg };
     this.insert(instr);
     return instr;
   }
