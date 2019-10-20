@@ -38,7 +38,8 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   v2s: 2, // get value from vector reg to scalar reg
   vcmp: 2, // compare two vector registers and write to results to pred register
   idv: 1,
-  vphi: 3 // join two predicate paths
+  vphi: 3, // join two predicate paths
+  phi: null // join any number of control flow paths
 
   // control flow will make analysis harder according to intel paper?
   //vbr: 3,
@@ -434,6 +435,23 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
       }
     }
     env.set(instr.dest, vec2);
+
+    return NEXT;
+  }
+
+  case "phi": {
+    // check which path was last executed and choose the value from that
+    // an easy hack (in ssa) is to just check which variable is currently defined in the interpeter
+    let idx = 0;
+    for (let i = 0; i < instr.args.length; i++) {
+      if (env.get(instr.args[i]) !== undefined) {
+        idx = i;
+      }
+    }
+
+    // the value that exists is the one that gets passed to dest reg
+    let val = getInt(instr, env, idx);
+    env.set(instr.dest, val);
 
     return NEXT;
   }

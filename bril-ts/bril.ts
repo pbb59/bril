@@ -29,7 +29,8 @@ export interface ValueOperation {
       "id" | "nop" |
       "eq" | "lt" | "gt" | "ge" | "le" | "not" | "and" | "or" |
       "lw" | "vload" | "vadd" |
-      "s2vb" | "v2s" | "s2v" | "vcmp" | "idv" | "vphi";
+      "s2vb" | "v2s" | "s2v" | "vcmp" | "idv" | 
+      "phi" | "vphi";
   args: Ident[];
   dest: Ident;
   type: Type;

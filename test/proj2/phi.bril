@@ -1,0 +1,20 @@
+main {
+  a0: int = const 4;
+  b0: bool = const false;
+  br b0 label0 label1;
+label0:
+  a1: int = const 1;
+  jmp end;
+label1:
+  b1: bool = const true;
+  br b1 label2 label3;
+label2:
+  a2: int = const 2;
+  jmp end;
+label3:
+  a3: int = const 3;
+  jmp end;
+end:
+  a4: int = phi a1 a2 a3;
+  print a4;
+}
