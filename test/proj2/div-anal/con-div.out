@@ -1,0 +1,51 @@
+main {
+init:
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+pack:
+  a0: int = const 7;
+  a1: int = const 11;
+  vec0_s: int = id a0;
+  vec1_s: int = id a1;
+  vec2: vector = s2v zero one two three;
+  vec3: vector = s2v one zero two three;
+  vec4_s: int = add vec0_s vec1_s;
+  vec0_s_v: vector = s2vb vec0_s;
+  vec5: vector = vadd vec2 vec0_s_v;
+  vec6_s: int = add vec4_s vec1_s;
+  vec6_s_v: vector = s2vb vec6_s;
+  vec7: vector = vadd vec6_s_v vec3;
+  vec8: vector = vadd vec7 vec5;
+extract:
+  a2: int = v2s vec8 zero;
+  a3: int = v2s vec8 one;
+  a4: int = v2s vec8 two;
+  a5: int = v2s vec8 three;
+print:
+  print a2;
+  print a3;
+  print a4;
+  print a5;
+}
+init:
+  in:  ∅
+  out: ∅
+pack:
+  in:  ∅
+  out: vec2, vec3, vec5, vec7, vec8
+extract:
+  in:  vec2, vec3, vec5, vec7, vec8
+  out: a2, a3, a4, a5, vec2, vec3, vec5, vec7, vec8
+print:
+  in:  a2, a3, a4, a5, vec2, vec3, vec5, vec7, vec8
+  out: a2, a3, a4, a5, vec2, vec3, vec5, vec7, vec8
+37
+37
+40
+42
+37
+37
+40
+42

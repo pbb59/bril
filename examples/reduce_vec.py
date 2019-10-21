@@ -24,9 +24,10 @@ vector_ops = {
 }
 
 # ASSUMES SSA
-# update arguments names to a new value across the whole function
-def update_names(func, from_, to_):
-    for instr in func['instrs']:
+# update arguments names to a new value from after a certain point following program order
+def update_names(func, from_, to_, start = 0):
+    for i in range(start, len(func['instrs'])):
+        instr = func['instrs'][i]
         args = var_args(instr)
         for i in range(len(args)):
             if args[i] == from_:
@@ -65,7 +66,7 @@ def restich_pass(func):
                     
                     # need to update the argument of this instruction to change name
                     # and all future instructions that use that name
-                    update_names(func, arg, new_arg)
+                    update_names(func, arg, new_arg, i)
 
                     func['instrs'].insert(i, new_inst)
 
