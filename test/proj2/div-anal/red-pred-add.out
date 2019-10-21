@@ -1,0 +1,62 @@
+main {
+init:
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+pack:
+  a0: int = const 7;
+  a1: int = const 11;
+  vec0_s: int = id a0;
+  vec1_s: int = id a1;
+  vec2: vector = s2v zero one two three;
+  vec3: vector = s2v one zero two three;
+  p0: pred = vcmp vec2 vec3;
+add0:
+  vec4_s: int = add vec0_s vec0_s;
+add1:
+  vec5_s: int = add vec1_s vec1_s;
+phi:
+  vec5_s_v: vector = s2vb vec5_s;
+  vec4_s_v: vector = s2vb vec4_s;
+  vec6: vector = vphi p0 vec4_s_v vec5_s_v;
+extract:
+  a2: int = v2s vec6 zero;
+  a3: int = v2s vec6 one;
+  a4: int = v2s vec6 two;
+  a5: int = v2s vec6 three;
+print:
+  print a2;
+  print a3;
+  print a4;
+  print a5;
+}
+init:
+  in:  ∅
+  out: ∅
+pack:
+  in:  ∅
+  out: p0, vec2, vec3
+add0:
+  in:  p0, vec2, vec3
+  out: p0, vec2, vec3
+add1:
+  in:  p0, vec2, vec3
+  out: p0, vec2, vec3
+phi:
+  in:  p0, vec2, vec3
+  out: p0, vec2, vec3, vec6
+extract:
+  in:  p0, vec2, vec3, vec6
+  out: a2, a3, a4, a5, p0, vec2, vec3, vec6
+print:
+  in:  a2, a3, a4, a5, p0, vec2, vec3, vec6
+  out: a2, a3, a4, a5, p0, vec2, vec3, vec6
+22
+22
+14
+14
+22
+22
+14
+14

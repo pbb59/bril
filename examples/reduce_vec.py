@@ -17,6 +17,62 @@ swap_table = {
     's2v'  : { 'scalar_inst' : 'id' , 'arg_map' : { 0 : 0 }}
 }
 
+# denote where vector args should be
+vector_ops = {
+    'vadd' : { 'vec_args' : [ 0, 1 ] },
+    'vphi' : { 'vec_args' : [ 1, 2 ] }
+}
+
+# ASSUMES SSA
+# update arguments names to a new value across the whole function
+def update_names(func, from_, to_):
+    for instr in func['instrs']:
+        args = var_args(instr)
+        for i in range(len(args)):
+            if args[i] == from_:
+                instr['args'][i] = to_
+
+# after instruction swap there may be type mismatch where use scalars as vector arguments
+# solve this by doing a pass that inserts s2vb instructions before they are used in vector instructions
+def restich_pass(func):
+    for i in range(len(func['instrs'])):
+        instr = func['instrs'][i]
+        # check if vector instruction has vector args
+        if 'op' in instr and instr['op'] in vector_ops:
+            # foreach arg check if it is a vector op
+            args = var_args(instr)
+            for j in range(len(args)):
+                if not j in vector_ops[instr['op']]['vec_args']:
+                    continue
+                arg = args[j]
+                # just do brute lookup
+                okay = True
+                for inst in func['instrs']:
+                    if 'dest' in inst and inst['dest'] == arg:
+                        if (inst['type'] != 'vector'):
+                            okay = False
+                        break
+
+                # insert a s2vb before the failing instruction
+                if (not okay):
+                    new_arg = arg + '_v'
+                    new_inst = {
+                        'dest' : new_arg,
+                        'op'   : 's2vb',
+                        'args' : [arg],
+                        'type' : 'vector'
+                    }
+                    
+                    # need to update the argument of this instruction to change name
+                    # and all future instructions that use that name
+                    update_names(func, arg, new_arg)
+
+                    func['instrs'].insert(i, new_inst)
+
+                    
+
+                    
+
 def perform_swap(todo_instr, func):
     # find the instruction to modify, needs SSA
     for prog_instr in func['instrs']:
@@ -25,8 +81,8 @@ def perform_swap(todo_instr, func):
             instr = prog_instr
 
     if instr['op'] in swap_table:
-        #print(instr) 
-        
+        #print(instr)
+
         # exchange arguments
         args = var_args(instr)
         instr['args'] = []
@@ -45,6 +101,15 @@ def perform_swap(todo_instr, func):
         old_type = instr['type']
         instr['type'] = 'int'
 
+        # if the vector instruction is predicated, we can still convert the instruction to scalar
+        # as long as remerge the scalars into a single vector using s2vb and vphi/merge with predicate (done in reglue pass above)
+        # you can also remove the predicates from the scalars
+        # helpful discussions with vector-master Khalid Al-Hawaj.
+        if 'pred' in instr:
+            pred = instr['pred']
+            instr['pred'] = 'undefined'
+            instr['neg']  = 'undefined'
+
         # annonate the name to show that it was changed
         if (old_type != 'vector'):
             return
@@ -53,11 +118,7 @@ def perform_swap(todo_instr, func):
         instr['dest'] += '_s'
         
         # update any dependencies in program order after the swap (change name), needs SSA
-        for dep_inst in func['instrs']:
-            args = var_args(dep_inst)
-            for i in range(len(args)):
-                if args[i] == old_name:
-                    dep_inst['args'][i] = instr['dest']
+        update_names(func, old_name, instr['dest'])
         
     
 
@@ -87,16 +148,16 @@ def reduce_vector_pass(func):
     # Reassemble the function.
     #func['instrs'] = flatten(blocks.values())
     
-    changed = False
-    return changed
+    #changed = False
+    #return changed
 
 def reduce_vector(func):
     """Iteratively optimize using divergence analysis, stopping when nothing
     remains to remove.
     """
     
-    while reduce_vector_pass(func):
-        pass
+    reduce_vector_pass(func)
+    restich_pass(func)
 
 '''
 MODES = {
