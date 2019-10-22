@@ -82,7 +82,6 @@ def perform_swap(todo_instr, func):
             instr = prog_instr
 
     if instr['op'] in swap_table:
-        #print(instr)
 
         # exchange arguments
         args = var_args(instr)
@@ -129,14 +128,12 @@ def reduce_vector_pass(func):
     """
     
     # do divergence analysis on the function
-    # TODO current being done at block level, want at inst level!
+    # NOTE blocks contain only a single instruction and optional label
     blocks, in_, out = div_analysis(func)
-    #blocks = list(form_blocks(func['instrs']))
-    # for each of the blocks(!) look at all of the variables that don't have
-    # an out divergence and attempt to optimize the single instructions
+
+    # based on divergence analysis of each instruction perform instruction swap to scalar when not divergent
     # we also want to mark each variable that was changed with a name annotation and change type
     # propagate that to the uses
-    
     for label, block in blocks.items():
         div_insts = out[label]
 
@@ -146,40 +143,21 @@ def reduce_vector_pass(func):
             if 'dest' in instr and not instr['dest'] in div_insts:
                 perform_swap(instr, func)
 
-    # Reassemble the function.
-    #func['instrs'] = flatten(blocks.values())
-    
-    #changed = False
-    #return changed
 
 def reduce_vector(func):
-    """Iteratively optimize using divergence analysis, stopping when nothing
-    remains to remove.
+    """The divergence optimizations requires two passes
+        1) Swap out instructions of non-divergent vector ops
+        2) Regenerate some vector ops if the newly generated scalar is needed for a vector op later
     """
     
     reduce_vector_pass(func)
     restich_pass(func)
 
-'''
-MODES = {
-    'tdce': trivial_dce,
-    'tdcep': trivial_dce_pass,
-    'dkp': drop_killed_pass,
-    'tdce+': trivial_dce_plus,
-}
-'''
-
 def localopt():
-    if len(sys.argv) > 1:
-        #modify_func = MODES[sys.argv[1]]
-        assert(False)
-    else:
-        modify_func = reduce_vector
-
     # Apply the change to all the functions in the input program.
     bril = json.load(sys.stdin)
     for func in bril['functions']:
-        modify_func(func)
+        reduce_vector(func)
     json.dump(bril, sys.stdout, indent=2, sort_keys=True)
 
 

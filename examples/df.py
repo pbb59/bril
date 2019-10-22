@@ -140,8 +140,7 @@ def cprop_merge(vals_list):
 # 0) Non const "Function" arg like a 'tid' variable (not SIMT so don't have this)
 # 1) Different scalar values placed into a vector register
 # 2) A dependency is already divergent
-# 3) Control...?? prob need SSA to turn control deps into data deps, but how does it help predication?
-# 4) If variable is killed, then need to check again if divergent (not important in SSA)
+# 3) If variable is killed, then need to check again if divergent (not important in SSA)
 
 # Generally things depenedent on something like 'tid' are divergent while others are not
 # Args current block (? inst) and incoming divergent values
@@ -149,7 +148,7 @@ def div_transfer(block, in_vals):
     out_vals = in_vals.copy()
     for instr in block:
         # get new divergent variables
-        # Check for condition (4) if not in SSA
+        # Check for condition (3) if not in SSA
         # not implemented
         # Check for condition (1)
         if instr['op'] == 's2v':
@@ -212,12 +211,9 @@ ANALYSES = {
 
 # do divergence analysis on a function
 def div_analysis(func):
-    # Form the CFG.
-    #blocks = cfg.block_map(form_blocks(func['instrs']))
-    #cfg.add_terminators(blocks)
     # we want to do this analysis for every instruction
     # cheat this into the current dataflow algorithm by making fake blocks with
-    # a single instruction in them
+    # a single instruction in them (and possibly a label)
     atomic_blocks = []
     atomic_block = []
     for instr in func['instrs']:
