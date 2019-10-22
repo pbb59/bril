@@ -1,0 +1,27 @@
+main {
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+  vec0: vector = s2v one one one zero;
+  vec1: vector = s2v two two two zero;
+  p0: pred = vcmp vec0 vec1;
+  (!p0) vec2: vector = vadd vec0 vec1;
+  vec3: vector = vphi p0 vec1 vec2;
+  a2: int = v2s vec3 zero;
+  a3: int = v2s vec3 one;
+  a4: int = v2s vec3 two;
+  a5: int = v2s vec3 three;
+  print a2;
+  print a3;
+  print a4;
+  print a5;
+}
+3
+3
+3
+0
+3
+3
+3
+0
