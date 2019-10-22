@@ -1,4 +1,5 @@
-# ARGS: diverge
+# A mix of convergent and divergent operations. Compiler should optimize when possible, but making sure
+# to revectorize when the scalar op is needed to be vector
 
 main {
 # init scalars

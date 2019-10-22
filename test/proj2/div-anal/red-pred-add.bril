@@ -1,4 +1,6 @@
-# ARGS: diverge
+# The vector operation within the predicate is convergent (but the predicate is not)
+# If each active lane is doing the same thing then can turn into a scalar without predicate
+# and merge based on the predicate later.
 
 main {
 # init scalar values

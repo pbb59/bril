@@ -1,4 +1,4 @@
-# ARGS: diverge
+# The vector operation is convergent. Can optimize to scalar add
 
 main {
 # init constants idxs

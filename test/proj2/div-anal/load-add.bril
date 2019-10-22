@@ -1,4 +1,4 @@
-# ARGS: diverge
+# Load are assumed to be divergent. No optimizations can be applied here
 
 main {
 # init const idxs
