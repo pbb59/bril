@@ -1,32 +1,31 @@
 # ARGS: diverge
 
 main {
-init:
+# init scalar values
   zero: int = const 0;
   one: int = const 1;
   two: int = const 2;
   three: int = const 3;
-pack:
   a0: int = const 7;
   a1: int = const 11;
+# init vectors
   vec0: vector = s2vb a0;
   vec1: vector = s2vb a1;
   vec2: vector = s2v zero one two three;
   vec3: vector = s2v one zero two three;
+# do predicated arithmetic
   p0: pred = vcmp vec2 vec3;
-add0:
   (p0) vec4: vector = vadd vec0 vec0;
-add1:
   (!p0) vec5: vector = vadd vec1 vec1;
   (!p0) vec6: vector = vadd vec5 vec1;
-phi:
+# merge results
   vec7: vector = vphi p0 vec4 vec6;
-extract:
+# extract vector elements
   a2: int = v2s vec7 zero;
   a3: int = v2s vec7 one;
   a4: int = v2s vec7 two;
   a5: int = v2s vec7 three;
-print:
+# print results
   print a2;
   print a3;
   print a4;

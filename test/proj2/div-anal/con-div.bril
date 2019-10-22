@@ -1,14 +1,14 @@
 # ARGS: diverge
 
 main {
-init:
+# init scalars
   zero: int = const 0;
   one: int = const 1;
   two: int = const 2;
   three: int = const 3;
-pack:
   a0: int = const 7;
   a1: int = const 11;
+# do a sequence of vector computation
   vec0: vector = s2vb a0;
   vec1: vector = s2vb a1;
   vec2: vector = s2v zero one two three;
@@ -18,12 +18,12 @@ pack:
   vec6: vector = vadd vec4 vec1; # 29,29,29,29
   vec7: vector = vadd vec6 vec3; # 30,29,31,32
   vec8: vector = vadd vec7 vec5; # 37,37,40,42
-extract:
+# extract vector elements
   a2: int = v2s vec8 zero;
   a3: int = v2s vec8 one;
   a4: int = v2s vec8 two;
   a5: int = v2s vec8 three;
-print:
+# print results
   print a2;
   print a3;
   print a4;

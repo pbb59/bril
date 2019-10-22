@@ -213,7 +213,23 @@ ANALYSES = {
 # do divergence analysis on a function
 def div_analysis(func):
     # Form the CFG.
-    blocks = cfg.block_map(form_blocks(func['instrs']))
+    #blocks = cfg.block_map(form_blocks(func['instrs']))
+    #cfg.add_terminators(blocks)
+    # we want to do this analysis for every instruction
+    # cheat this into the current dataflow algorithm by making fake blocks with
+    # a single instruction in them
+    atomic_blocks = []
+    atomic_block = []
+    for instr in func['instrs']:
+        # if label, can also add another instruction next interation
+        if ('op' not in instr):
+            atomic_block.append(instr)
+        # otherwise we just push the single instruction as its own block
+        else:
+            atomic_block.append(instr)
+            atomic_blocks.append(atomic_block)
+            atomic_block = []
+    blocks = cfg.block_map(atomic_blocks)
     cfg.add_terminators(blocks)
 
     # do the analysis, annotating each block with divergence in and out

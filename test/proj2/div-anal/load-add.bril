@@ -2,7 +2,6 @@
 
 main {
 # init const idxs
-init:
   zero: int = const 0;
   one: int = const 1;
   two: int = const 2;
@@ -22,16 +21,15 @@ sw_loop:
 pack:
   vec0: vector = vload zero;
   vec1: vector = vload zero;
-add:
+
   vec2: vector = vadd vec0 vec1;
-extract:
+
   a4: int = v2s vec2 zero;
   a5: int = v2s vec2 one;
   a6: int = v2s vec2 two;
   a7: int = v2s vec2 three;
 
 # print results
-print:
   print a4;
   print a5;
   print a6;

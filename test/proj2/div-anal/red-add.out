@@ -1,42 +1,22 @@
 main {
-init:
   zero: int = const 0;
   one: int = const 1;
   two: int = const 2;
   three: int = const 3;
-pack:
   a0: int = const 7;
   a1: int = const 11;
   vec0_s: int = id a0;
   vec1_s: int = id a1;
-add:
   vec2_s: int = add vec0_s vec1_s;
-extract:
   a2: int = id vec2_s;
   a3: int = id vec2_s;
   a4: int = id vec2_s;
   a5: int = id vec2_s;
-print:
   print a2;
   print a3;
   print a4;
   print a5;
 }
-init:
-  in:  ∅
-  out: ∅
-pack:
-  in:  ∅
-  out: ∅
-add:
-  in:  ∅
-  out: ∅
-extract:
-  in:  ∅
-  out: ∅
-print:
-  in:  ∅
-  out: ∅
 18
 18
 18
