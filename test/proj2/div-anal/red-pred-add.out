@@ -16,15 +16,16 @@ add0:
   vec4_s: int = add vec0_s vec0_s;
 add1:
   vec5_s: int = add vec1_s vec1_s;
+  vec6_s: int = add vec5_s vec1_s;
 phi:
-  vec5_s_v: vector = s2vb vec5_s;
+  vec6_s_v: vector = s2vb vec6_s;
   vec4_s_v: vector = s2vb vec4_s;
-  vec6: vector = vphi p0 vec4_s_v vec5_s_v;
+  vec7: vector = vphi p0 vec4_s_v vec6_s_v;
 extract:
-  a2: int = v2s vec6 zero;
-  a3: int = v2s vec6 one;
-  a4: int = v2s vec6 two;
-  a5: int = v2s vec6 three;
+  a2: int = v2s vec7 zero;
+  a3: int = v2s vec7 one;
+  a4: int = v2s vec7 two;
+  a5: int = v2s vec7 three;
 print:
   print a2;
   print a3;
@@ -45,18 +46,18 @@ add1:
   out: p0, vec2, vec3
 phi:
   in:  p0, vec2, vec3
-  out: p0, vec2, vec3, vec6
+  out: p0, vec2, vec3, vec7
 extract:
-  in:  p0, vec2, vec3, vec6
-  out: a2, a3, a4, a5, p0, vec2, vec3, vec6
+  in:  p0, vec2, vec3, vec7
+  out: a2, a3, a4, a5, p0, vec2, vec3, vec7
 print:
-  in:  a2, a3, a4, a5, p0, vec2, vec3, vec6
-  out: a2, a3, a4, a5, p0, vec2, vec3, vec6
-22
-22
+  in:  a2, a3, a4, a5, p0, vec2, vec3, vec7
+  out: a2, a3, a4, a5, p0, vec2, vec3, vec7
+33
+33
 14
 14
-22
-22
+33
+33
 14
 14
