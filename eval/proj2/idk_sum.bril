@@ -1,0 +1,40 @@
+# I don't know what this is, purely synthetic
+#for (int x = 0; x < xlen; x++) 
+#   result = 0;
+#   for (int y = 0; y < ylen; y++)
+#     result += (a[x] * b[y]) / c[y];
+#   d[x] = result;
+#
+
+main {
+# useful constants
+  zero: int = const 0;
+  one: int = const 1;
+  veczero: vector = s2vb zero;
+  vecone: vector = s2vb one;
+# starting mem indices
+  ai0: int = id zero;
+  bi0: vector = s2vb zero;
+  ci0: vector = s2vb zero;
+  di0: int = id zero;
+# load first set of values
+  vr0: vector = s2vb zero;
+  va0: vector = vload ai0;
+  vb0: vector = gather bi0;
+  vc0: vector = gather ci0;
+# do first computation
+  vt0: vector = vmul va0 vb0;
+  vr1: vector = vdiv vt0 vc0;
+# increment indices of inner loop
+  bi1: vector = vadd bi0 vecone;
+  ci1: vector = vadd ci0 vecone;
+# load second values
+  vb1: vector = gather bi1;
+  vc1: vector = gather ci1;
+# do second computation
+  vt1: vector = vmul va0 vb1;
+  vr2: vector = vdiv vt1 vc1;
+# continue the iterations
+
+
+}
