@@ -39,11 +39,12 @@ const argCounts: {[key in bril.OpCode]: number | null} = {
   vcmp: 2, // compare two vector registers and write to results to pred register
   idv: 1,
   vphi: 3, // join two predicate paths
-  phi: null // join any number of control flow paths
-
-  // control flow will make analysis harder according to intel paper?
-  //vbr: 3,
-  //vbr.uni: 3
+  phi: null, // join any number of control flow paths
+  vmul: 2,
+  vsub: 2,
+  vdiv: 2,
+  gather: 1,
+  scatter: 2
 };
 
 // this represents an infinite size register file
@@ -351,6 +352,16 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
     return NEXT;
   }
 
+  case "gather": {
+    let addrs = getVec(instr, env, 0);
+    let vec = new Int32Array(fixedVecSize);
+    for (let i = 0; i < fixedVecSize; i++) {
+      vec[i] = getMem(addrs[i]);
+    }
+    env.set(instr.dest, vec);
+    return NEXT;
+  }
+
   case "vstore": {
     
     // serialized version
@@ -358,6 +369,16 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
     let addr = getInt(instr, env, 1);
     for (let i = 0; i < fixedVecSize; i++) {
       setMem(val[i], addr + i);
+    }
+
+    return NEXT;
+  }
+
+  case "scatter": {
+    let val = getVec(instr, env, 0);
+    let addrs = getVec(instr, env, 1);
+    for (let i = 0; i < fixedVecSize; i++) {
+      setMem(val[i], addrs[i]);
     }
 
     return NEXT;
@@ -455,6 +476,52 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
 
     return NEXT;
   }
+
+  case "vmul": {
+    let vecA = getVec(instr, env, 0);
+    let vecB = getVec(instr, env, 1);
+    let vecC = new Int32Array(fixedVecSize);
+    let mask = getPred(instr, env);
+    for (let i = 0; i < fixedVecSize; i++) {
+      if (mask[i]) {
+        vecC[i] = vecA[i] * vecB[i];
+      }
+    }
+    env.set(instr.dest, vecC);    
+
+    return NEXT;
+  }
+
+  case "vsub": {
+    let vecA = getVec(instr, env, 0);
+    let vecB = getVec(instr, env, 1);
+    let vecC = new Int32Array(fixedVecSize);
+    let mask = getPred(instr, env);
+    for (let i = 0; i < fixedVecSize; i++) {
+      if (mask[i]) {
+        vecC[i] = vecA[i] - vecB[i];
+      }
+    }
+    env.set(instr.dest, vecC);    
+
+    return NEXT;
+  }
+
+  case "vdiv": {
+    let vecA = getVec(instr, env, 0);
+    let vecB = getVec(instr, env, 1);
+    let vecC = new Int32Array(fixedVecSize);
+    let mask = getPred(instr, env);
+    for (let i = 0; i < fixedVecSize; i++) {
+      if (mask[i]) {
+        vecC[i] = vecA[i] / vecB[i];
+      }
+    }
+    env.set(instr.dest, vecC);    
+
+    return NEXT;
+  }
+
 
   }
   unreachable(instr);

@@ -1,0 +1,50 @@
+# for (int j=0; j<ylen; j++)
+#   for (int i=0; i<xlen; i++)
+#       result += (coeffs[i] * samples[j+i]);
+#   results[j] = result;
+
+# Make one SIMD4 invocation of this, equivalent to 4 SIMT threads running (imagine outerloop exists)
+# Authors point out can optimize loop bookeeping across lanes
+
+main {
+# useful constants
+  zero: int = const 0;
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;
+
+# outer loops (vectorizing over)
+  i: vector = s2v zero one two three;
+
+# intialize iterators for loop and memory
+  inc: vector = s2vb one;
+
+  ci0: vector = s2vb zero;
+  si0: vector = s2vb zero;
+  sa0: vector = vadd i si0;
+
+  r0: vector = s2vb zero;
+
+# inner loop unrolled twice
+# iteration 0
+# get mem
+  cv1: vector = gather ci0;
+  sv1: vector = gather sa0;
+# do computation
+  t1: vector = vmul cv1 sv1;
+  r1: vector = vadd t1 r0;
+# inc mem addresses
+  ci1: vector = vadd ci0 one;
+  si1: vector = vadd si0 one;
+  sa1: vector = vadd i si1;
+
+# iteration 1
+# get mem
+  cv2: vector = gather ci1;
+  sv2: vector = gather sa1;
+# do computation
+  t2: vector = vmul cv2 sv2;
+  r2: vector = vadd t2 r1;
+
+#  scatter r2 
+}

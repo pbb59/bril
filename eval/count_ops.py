@@ -12,6 +12,11 @@ sOps = 1
 # just specify which ones consume vOps, all others take sOps
 cost_table = {
   'vadd' : vOps,
+  'vsub' : vOps,
+  'vmul' : vOps,
+  'vdiv' : vOps,
+  'gather' : vOps,
+  'scatter' : vOps,
   's2v'  : vOps,
   'vphi' : vOps,
   'vload': vOps,

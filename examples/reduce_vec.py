@@ -12,6 +12,11 @@ from df import div_analysis
 # specifies which vector instructions should be swapped and how arguments should be mapped
 swap_table = {
     'vadd' : { 'scalar_inst' : 'add', 'arg_map' : { 0 : 0, 1 : 1 }},
+    'vsub' : { 'scalar_inst' : 'sub', 'arg_map' : { 0 : 0, 1 : 1 }},
+    'vmul' : { 'scalar_inst' : 'mul', 'arg_map' : { 0 : 0, 1 : 1 }},
+    'vdiv' : { 'scalar_inst' : 'div', 'arg_map' : { 0 : 0, 1 : 1 }},
+    'gather' : { 'scalar_inst' : 'lw', 'arg_map' : { 0 : 0 }},
+    'scatter' : { 'scalar_inst' : 'sw', 'arg_map' : { 0 : 0, 1 : 1 }},
     'v2s'  : { 'scalar_inst' : 'id' , 'arg_map' : { 0 : 0 }},
     's2vb' : { 'scalar_inst' : 'id' , 'arg_map' : { 0 : 0 }},
     's2v'  : { 'scalar_inst' : 'id' , 'arg_map' : { 0 : 0 }}
@@ -20,26 +25,37 @@ swap_table = {
 # denote where vector args should be
 vector_ops = {
     'vadd' : { 'vec_args' : [ 0, 1 ] },
+    'vsub' : { 'vec_args' : [ 0, 1 ] },
+    'vmul' : { 'vec_args' : [ 0, 1 ] },
+    'vdiv' : { 'vec_args' : [ 0, 1 ] },
+    'v2s'  : { 'vec_args' : [ 0 ] },
     'vphi' : { 'vec_args' : [ 1, 2 ] }
 }
 
 # ASSUMES SSA
 # update arguments names to a new value from after a certain point following program order
-def update_names(func, from_, to_, start = 0):
+def update_names(func, from_, to_, to_vector = False, start = 0):
     for i in range(start, len(func['instrs'])):
         instr = func['instrs'][i]
         args = var_args(instr)
         for i in range(len(args)):
             if args[i] == from_:
-                instr['args'][i] = to_
+                if (to_vector):
+                    if (instr['op'] in vector_ops):
+                        if (i in vector_ops[instr['op']]['vec_args']):
+                            instr['args'][i] = to_
+                else:
+                    instr['args'][i] = to_
 
 # after instruction swap there may be type mismatch where use scalars as vector arguments
 # solve this by doing a pass that inserts s2vb instructions before they are used in vector instructions
 def restich_pass(func):
-    for i in range(len(func['instrs'])):
-        instr = func['instrs'][i]
+    i = 0
+    for instr in func['instrs']:
+        #instr = func['instrs'][i]
         # check if vector instruction has vector args
         if 'op' in instr and instr['op'] in vector_ops:
+            
             # foreach arg check if it is a vector op
             args = var_args(instr)
             for j in range(len(args)):
@@ -66,9 +82,10 @@ def restich_pass(func):
                     
                     # need to update the argument of this instruction to change name
                     # and all future instructions that use that name
-                    update_names(func, arg, new_arg, i)
+                    update_names(func, arg, new_arg, True, i)
 
                     func['instrs'].insert(i, new_inst)
+        i += 1
 
                     
 
@@ -118,7 +135,7 @@ def perform_swap(todo_instr, func):
         instr['dest'] += '_s'
         
         # update any dependencies in program order after the swap (change name), needs SSA
-        update_names(func, old_name, instr['dest'])
+        update_names(func, old_name, instr['dest'], False)
         
     
 

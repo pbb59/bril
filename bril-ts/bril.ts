@@ -16,7 +16,7 @@ export type Type = "int" | "bool" | "vector" | "pred";
  * An instruction that does not produce any result.
  */
 export interface EffectOperation {
-  op: "br" | "jmp" | "print" | "ret" | "sw" | "vstore" ;
+  op: "br" | "jmp" | "print" | "ret" | "sw" | "vstore" | "scatter" ;
   args: Ident[];
 }
 
@@ -30,7 +30,7 @@ export interface ValueOperation {
       "eq" | "lt" | "gt" | "ge" | "le" | "not" | "and" | "or" |
       "lw" | "vload" | "vadd" |
       "s2vb" | "v2s" | "s2v" | "vcmp" | "idv" | 
-      "phi" | "vphi";
+      "phi" | "vphi" | "vmul" | "vsub" | "vdiv" | "gather";
   args: Ident[];
   dest: Ident;
   type: Type;
