@@ -29,7 +29,8 @@ vector_ops = {
     'vmul' : { 'vec_args' : [ 0, 1 ] },
     'vdiv' : { 'vec_args' : [ 0, 1 ] },
     'v2s'  : { 'vec_args' : [ 0 ] },
-    'vphi' : { 'vec_args' : [ 1, 2 ] }
+    'vphi' : { 'vec_args' : [ 1, 2 ] },
+    'vcmp' : { 'vec_args' : [ 0, 1 ] }
 }
 
 # ASSUMES SSA

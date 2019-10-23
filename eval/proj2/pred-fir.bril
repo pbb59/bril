@@ -1,11 +1,14 @@
 # for (int j=0; j<ylen; j++)
 #   result = 0;
 #   for (int i=0; i<xlen; i++)
-#       result += (coeffs[i] * samples[j+i]);
+#       if (j == i) 
+#         result += 2
+#       else
+#         result += (coeffs[i] * samples[j+i]);
 #   results[j] = result;
 
 # Make one SIMD4 invocation of this, equivalent to 4 SIMT threads running (imagine outerloop exists)
-# Authors point out can optimize loop bookeeping across lanes
+# Similar to fir, but add an extra conditional (really a synthetic benchmark)
 
 main {
 # useful constants
@@ -13,6 +16,9 @@ main {
   one: int = const 1;
   two: int = const 2;
   three: int = const 3;
+  zerovec: vector = s2vb zero;
+  onevec: vector = s2vb one;
+  twovec: vector = s2vb two;
 
 # outer loops (vectorizing over)
   j: vector = s2v zero one two three;
@@ -32,8 +38,11 @@ main {
   cv1: vector = gather ci0;
   sv1: vector = gather sa0;
 # do computation
-  t1: vector = vmul cv1 sv1;
-  r1: vector = vadd t1 r0;
+  p0: pred = vcmp j zerovec;
+  (p0) r1p: vector = vadd r0 twovec;
+  (!p0) t1: vector = vmul cv1 sv1;
+  (!p0) r1n: vector = vadd r0 t1;
+  r1: vector = vphi p0 r1p r1n;
 # inc mem addresses
   ci1: vector = vadd ci0 one;
   si1: vector = vadd si0 one;
@@ -44,8 +53,11 @@ main {
   cv2: vector = gather ci1;
   sv2: vector = gather sa1;
 # do computation
-  t2: vector = vmul cv2 sv2;
-  r2: vector = vadd t2 r1;
+  p1: pred = vcmp j onevec;
+  (p1) r2p: vector = vadd r1 twovec;
+  (!p1) t2: vector = vmul cv2 sv2;
+  (!p1) r2n: vector = vadd r1 t2;
+  r2: vector = vphi p1 r2p r1n;
 
 #  scatter r2 
 }
